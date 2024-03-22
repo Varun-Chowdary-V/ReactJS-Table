@@ -1,20 +1,23 @@
 import React from 'react';
 import TableRow from './TableRow';
 
-const TableBody = ({
-  columns,
-  items,
-  isStriped,
-  showSelectionCheckboxes,
-  disallowEmptySelect,
-  selectedItems,
-  selectionMode,
-  onSelectionChange,
-  filter,
-  isLoading,
-  loadingContent,
-  emptyContent
-}) => {
+const TableBody = (props) => {
+
+  const {
+    columns,
+    items,
+    isStriped,
+    showSelectionCheckboxes,
+    disallowEmptySelect,
+    selectedItems,
+    selectionMode,
+    onSelectionChange,
+    filter,
+    isLoading,
+    loadingContent,
+    emptyContent
+  } = props
+
   const doesIncludeEntry = entry => {
     return filter.length > 0 ? columns.some(column => {
       const field = column.field || column.name.toLowerCase();

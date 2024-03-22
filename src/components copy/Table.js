@@ -3,33 +3,45 @@ import SearchBar from './SearchBar';
 import TableHeader from './TableHeader';
 import TableBody from './TableBody';
 
-const Table = ({
-  columns,
-  items,
-  layout = 'auto',
-  hideHeader = false,
-  isStriped = false,
-  showSelectionCheckboxes = false,
-  disallowEmptySelect = false,
-  selectionMode = 'none',
-  sortDescriptor,
-  isLoading = false,
-  loadingContent = 'Loading...',
-  emptyContent = 'No items found.',
-}) => {
 
+const Table = (props) => {
+
+  const {
+      columns,
+      items,
+      layout = 'auto',
+      hideHeader = false,
+      isStriped = false,
+      showSelectionCheckboxes = false,
+      disallowEmptySelect = false,
+      selectionMode = 'none',
+      sortDescriptor,
+      isLoading = false,
+      loadingContent = 'Loading...',
+      emptyContent = 'No items found.',
+    } = props
   const [filter, setFilter] = useState('');
   const [selectedItems,setSelectedItems]=useState([]);
+ 
+  // For Pagination
+  const [currentPage, setPage] = useState(0);
+  const numPages = Math.ceil(items.length / 10);
 
+  // To check whether an element is selected to filter or not
   const doesIncludeEntry = entry => {
+
     return filter.length > 0 ? columns.some(column => {
+
       const field = column.field || column.name.toLowerCase();
+
       return entry[field] && entry[field].toString().toLowerCase().includes(filter.toLowerCase());
+
     }) : true;
   };
 
+  // Sort and filter items based on the sortDescriptor and search bar query
   const sortedItems = items.filter(item => doesIncludeEntry(item)).sort((a, b) => {
-    
+
     const field = sortDescriptor.field;
     const aValue = a[field];
     const bValue = b[field];
@@ -45,16 +57,51 @@ const Table = ({
     }
   });
 
-  function onSelectionChange(item) {
-    if( selectedItems.includes(item)){
-      setSelectedItems(selectedItems.filter((_,index) => index !== selectedItems.lastIndexOf(item)))
+  // Pagination requirements
+  const getPaginationNumbers = () => {
+    const blocks = [];
+    for (let i = 0; i < numPages; i++) {
+      blocks.push(i);
     }
-    setSelectedItems([item,...selectedItems]);
+    return blocks;
+  };
+
+  const startIndex = currentPage * 10;
+  const endIndex = Math.min(startIndex + 10, sortedItems.length);
+  const slicedItems = sortedItems.slice(startIndex, endIndex);
+  const getPageNumbers = getPaginationNumbers();  
+  const startBlockIndex = Math.max(currentPage - 1, 0);
+  const endBlockIndex = Math.min(currentPage + 1, numPages - 1);
+
+  const goToPrevPage = () => {
+    if (currentPage > 0) {
+      setPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < numPages - 1) {
+      setPage(currentPage + 1);
+    }
+  };
+
+
+  // Update elements if the checkbox/radio is checked
+  function onSelectionChange(item,e) {
+    const isChecked = e.target.checked;
+    if (isChecked) {
+      setSelectedItems([...selectedItems, item]);
+    } else {
+      setSelectedItems(selectedItems.filter(selectedItem => selectedItem !== item));
+    }
   }
+  
 
 
   return (
+
     <div style={{ display:'flex', flexDirection: 'column', justifyContent: 'center' }}>       
+
       {/* Search Bar */}
       <div style={{ display:'flex', justifyContent: 'center' }}>
         <SearchBar 
@@ -62,15 +109,18 @@ const Table = ({
           placeholder="Search..."
         />
       </div>
+
       {/* Table */}
-      <table className={` ${layout === 'auto' ? '' : 'fixed'}`}>
+      <table style={{layout:`${layout === 'auto' ? '' : 'fixed'}`, width:'fit-content', minWidth:'70%', margin:'auto', paddingBottom:'20px'}} >
+
         {/* Header */}
         {!hideHeader && <TableHeader columns={columns} showSelectionCheckboxes={showSelectionCheckboxes} sortDescriptor={sortDescriptor} />}
+
         {/* Table Body */}
         <tbody>
           <TableBody
             columns={columns}
-            items={sortedItems}
+            items={slicedItems}
             isStriped={isStriped}
             showSelectionCheckboxes={showSelectionCheckboxes}
             disallowEmptySelect={disallowEmptySelect}
@@ -84,6 +134,31 @@ const Table = ({
           />
         </tbody>
       </table> 
+
+      {/* Pagination */}
+      <div style={{display:'flex', justifyContent:'center'}}>
+          <button onClick={() => { setPage(0); }}>
+            &#171;
+          </button>
+          <button onClick={goToPrevPage}>&#8592;</button>
+          {
+            getPageNumbers.slice(startBlockIndex, endBlockIndex + 1).map(pageNum => (
+              <button
+                key={pageNum}
+                onClick={() => {
+                  setPage(pageNum);
+                }}
+              >
+                {pageNum}
+              </button>
+            ))
+          }
+          <button  onClick={goToNextPage}>&rarr;</button>
+          <button onClick={() => {
+            setPage(numPages - 1);
+          }}>&raquo;</button>
+      </div>
+
       {/* Selected items display as json */}
       <div>
         {selectedItems.map((item, index) => (
@@ -91,6 +166,7 @@ const Table = ({
         ))}
       </div>
     </div>
+
   );
 };
 

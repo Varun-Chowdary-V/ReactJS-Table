@@ -4,12 +4,6 @@ import Table from './components copy/Table';
 
 const App = () => {
   // Sample data for the table
-  const columns = [
-    { name: 'ID', field: 'id' },
-    { name: 'Name', field: 'name' },
-    { name: 'Age', field: 'age' },
-    { name: 'Email', field: 'email' }
-  ];
 
   const items = [
     { id: 1, name: 'John Doe', age: 30, email: 'john@example.com' },
@@ -109,6 +103,15 @@ const App = () => {
     { id: 5, name: 'Charlie Brown', age: 28, email: 'charlie@example.com' },
   ];
 
+  const columns=(Object.keys(items[0])).map((string) => {
+    return (
+      {
+        name:(string[0].toUpperCase()+string.slice(1)),
+        field:string.toLowerCase()
+      }
+    )
+  })
+  
   const layout = 'fixed';
   const hideHeader = false;
   const isStriped = true;
@@ -122,7 +125,7 @@ const App = () => {
 
   return (
     <div>
-      <h1>Sample Table</h1>
+      <h1 style={{textAlign:'center'}}>Sample Table</h1>
       <Table
         columns={columns}
         items={items}

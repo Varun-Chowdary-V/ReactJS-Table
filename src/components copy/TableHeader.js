@@ -1,7 +1,10 @@
 import React from 'react';
 
 
-const TableHeader = ({ columns, showSelectionCheckboxes, sortDescriptor}) => {
+const TableHeader = (props) => {
+
+  const { columns, showSelectionCheckboxes, sortDescriptor} = props
+  
   return (
     <thead>
       <tr>
